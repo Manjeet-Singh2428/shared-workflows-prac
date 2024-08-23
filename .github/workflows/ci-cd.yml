@@ -19,7 +19,7 @@ jobs:
     needs: build
     uses: ./.github/workflows/deploy.yml
     with:
-      bucket-name: ${{ secrets.S3_BUCKET_NAME }}
+      bucket-name: ${{ github.event.repository.name }}  # Update this line with a specific bucket name if needed
       build-directory: './build'
     secrets:
       aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
