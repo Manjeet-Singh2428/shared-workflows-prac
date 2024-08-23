@@ -1,42 +1,39 @@
-name: Reusable Build Workflow
+name: Reusable Deploy Workflow
 
 on:
   workflow_call:
     inputs:
-      node-version:
+      bucket-name:
         required: true
         type: string
+      build-directory:
+        required: true
+        type: string
+    secrets:
+      aws-access-key-id:
+        required: true
+      aws-secret-access-key:
+        required: true
+      aws-region:
+        required: true
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v3
-      
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v3  # Compatible with Node.js 20
+      - name: Download build artifacts
+        uses: actions/download-artifact@v3
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          
+          name: build-artifacts
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v3
+        with:
+          aws-access-key-id: ${{ secrets.aws-access-key-id }}
+          aws-secret-access-key: ${{ secrets.aws-secret-access-key }}
+          aws-region: ${{ secrets.aws-region }}
 
       - name: Sync files to S3
         run: |
-         aws s3 sync . s3://reusable-workflows-prac --delete
-          
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: ${{ inputs.node-version }}
-
-      - name: Install dependencies
-        run: npm install
-
-      - name: Build the static site
-        run: npm run build
-
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v3
-        with:
-          name: build-artifacts
-          path: ./build
+          aws s3 sync ${{ inputs.build-directory }} s3://${{ inputs.bucket-name }}/ --delete
