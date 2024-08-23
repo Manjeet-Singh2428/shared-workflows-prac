@@ -6,9 +6,6 @@ on:
       node-version:
         required: true
         type: string
-    secrets:
-      npm-token:
-        required: true
 
 jobs:
   build:
@@ -20,15 +17,15 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: ${{ inputs.node-version }}
-          registry-url: 'https://registry.npmjs.org/'
 
       - name: Install dependencies
         run: npm install
 
-      - name: Build the project
+      - name: Build the static site
         run: npm run build
 
-      - name: Publish package
-        run: npm publish
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.npm-token }}
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: build-artifacts
+          path: ./build
