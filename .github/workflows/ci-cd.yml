@@ -13,20 +13,15 @@ jobs:
     uses: ./.github/workflows/build.yml
     with:
       node-version: '16.x'
-
-  test:
-    needs: build
-    uses: ./.github/workflows/test.yml
-    with:
-      node-version: '16.x'
+      build-directory: './build'
 
   deploy:
-    if: github.ref == 'refs/heads/main'
-    needs: test
+    needs: build
     uses: ./.github/workflows/deploy.yml
     with:
-      bucket-name: reusable-workflows-prac
-      cloudfront-distribution-id: YOUR_CLOUDFRONT_DISTRIBUTION_ID # Optional, if using CloudFront
+      bucket-name: ${{ secrets.S3_BUCKET_NAME }}
+      build-directory: './build'
     secrets:
       aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
       aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      aws-region: ${{ secrets.AWS_REGION }}
