@@ -20,7 +20,7 @@ jobs:
 
       - name: Deploy to AWS
         run: |
-          aws s3 sync ./build s3://reusable-workflows-prac/$GITHUB_REF_NAME/ --delete
+          aws s3 sync ./build s3://${{ secrets.bucket-name }}/$GITHUB_REF_NAME/ --delete
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.aws-access-key-id }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.aws-secret-access-key }}
