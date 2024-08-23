@@ -25,7 +25,7 @@ jobs:
     needs: test
     uses: ./.github/workflows/deploy.yml
     with:
-      bucket-name: my-static-website-bucket
+      bucket-name: reusable-workflows-prac
       cloudfront-distribution-id: YOUR_CLOUDFRONT_DISTRIBUTION_ID # Optional, if using CloudFront
     secrets:
       aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
