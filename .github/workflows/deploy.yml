@@ -3,8 +3,11 @@ name: Reusable Deploy Workflow
 on:
   workflow_call:
     inputs:
-      environment:
+      bucket-name:
         required: true
+        type: string
+      cloudfront-distribution-id:
+        required: false
         type: string
     secrets:
       aws-access-key-id:
@@ -16,11 +19,22 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - name: Download build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: build-artifacts
 
-      - name: Deploy to AWS
+      - name: Deploy to S3
         run: |
-          aws s3 sync ./build s3://${{ secrets.bucket-name }}/$GITHUB_REF_NAME/ --delete
+          aws s3 sync ./build s3://${{ inputs.bucket-name }} --delete
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.aws-access-key-id }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.aws-secret-access-key }}
+
+      - name: Invalidate CloudFront cache
+        if: ${{ inputs.cloudfront-distribution-id }}
+        run: |
+          aws cloudfront create-invalidation --distribution-id ${{ inputs.cloudfront-distribution-id }} --paths "/*"
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.aws-access-key-id }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.aws-secret-access-key }}
